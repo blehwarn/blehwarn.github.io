@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1pmcord</title>
+  <style>
+    body {
+      background-image: url('https://media.discordapp.net/attachments/1284844539969802252/1300045880199479306/b9018579aebd5c161b0eac79ca04f17a_1.gif?ex=671f6993&is=671e1813&hm=7753956fd013395581649619d77f7cccaab1b2893cb3961574aaccb3ea8434c7&=&width=448&height=251');
+      background-size: cover; 
+      background-position: center; 
+      color: rgba(255, 255, 255, 1);
+      font-family: 'Helvetica', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .container {
+      text-align: center;
+      width: 300px;
+      max-width: 300px;
+      background-color: rgba(92, 46, 145, 0.8);
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .title {
+      font-size: 24px;
+      font-weight: bold;
+      color: rgba(255, 255, 255, 1);
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    }
+
+    .input-group {
+      margin-bottom: 10px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+    input, textarea {
+      background-color: rgba(58, 31, 104, 0.9); 
+      color: rgba(255, 255, 255, 1);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      padding: 8px;
+      margin: 4px 0;
+      font-size: 14px;
+      width: 100%;
+      border-radius: 8px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: rgba(255, 255, 255, 1);
+      border: none;
+      color: #2E0A4D;
+      border-radius: 5px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #2E0A4D;
+      color: rgba(255, 255, 255, 1);
+    }
+
+    
+    .checkbox-group {
+      display: flex;  
+      justify-content: center;  
+      gap: 20px;  
+      margin: 10px 0;  /
+    }
+
+    label {
+      display: flex;  
+      align-items: center;  
+    }
+  </style>
+</head>
+<body>
+  
+  <div class="container" id="tokenView">
+    <div class="title">Enter Token</div>
+    <div class="input-group">
+      <input type="text" id="tokenInput" placeholder="Enter Token" required>
+    </div>
+    <button onclick="initializeApp()">1pmcord</button> 
+  </div>
+
+  
+  <div class="container" id="mainView" style="display: none;">
+    <div class="title-container">
+      <span class="title">1pmcord</span>
+    </div>
+
+    <div class="input-group">
+      <input type="text" id="channelId" placeholder="Enter Channel ID" required>
+    </div>
+
+    <div class="input-group">
+      <input type="text" id="emojiInput" placeholder="Emoji">
+    </div>
+
+    <div class="input-group">
+      <textarea id="messages" rows="3" placeholder="Enter your message"></textarea>
+    </div>
+
+    <div class="checkbox-group">
+      <label>
+        <input type="checkbox" id="hashtagCheckbox"> bold
+      </label>
+      <label>
+        <input type="checkbox" id="formatCheckbox"> ladder
+      </label>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    let token = '';  
+    let channelId = '';
+    let messageCount = 0;
+    let rotateLimit = 10;
+
+    const words = [
+      "yes im a god",
+      "focus the fuck up dorky pedo",
+      "slow ass whore"
+      // adding more words
+    ];
+
+    function initializeApp() {
+      token = document.getElementById('tokenInput').value.trim(); // Save the user token
+      if (token) {
+        document.getElementById('tokenView').style.display = 'none';
+        document.getElementById('mainView').style.display = 'block';
+      }
+    }
+
+    async function sendMessage(channelId, message) {
+      const headers = {
+        'Authorization': token, 
+        'Content-Type': 'application/json'
+      };
+      const data = { 'content': message };
+
+      try {
+        const response = await axios.post(`https://discord.com/api/v9/channels/${channelId}/messages`, data, { headers });
+        if (response.status === 200) {
+          console.log(`Sent message: ${message}`);
+          const emoji = document.getElementById('emojiInput').value.trim();
+          if (emoji) {
+            const messageId = response.data.id;
+            await reactToMessage(messageId, emoji);
+          }
+        }
+      } catch (error) {
+        console.error('Error sending message:', error);
+      }
+    }
+
+    async function reactToMessage(messageId, emoji) {
+      const headers = { 'Authorization': token };  
+      try {
+        await axios.put(`https://discord.com/api/v9/channels/${channelId}/messages/${messageId}/reactions/${encodeURIComponent(emoji)}/@me`, null, { headers });
+        console.log(`Reacted with ${emoji} to message ID: ${messageId}`);
+      } catch (error) {
+        console.error('Error reacting to message:', error);
+      }
+    }
+
+    function sendMessageWithInput(randomMessage) {
+      const messageInput = document.getElementById('messages').value.trim();
+      let message = randomMessage || messageInput;
+      const hashtagCheckbox = document.getElementById('hashtagCheckbox');
+      const formatCheckbox = document.getElementById('formatCheckbox');
+
+      if (hashtagCheckbox.checked) {
+        message = '# ' + message; 
+      }
+
+      if (formatCheckbox.checked) {
+        message = message.split(' ').join('\n'); 
+      }
+
+      channelId = document.getElementById('channelId').value.trim(); 
+      if (channelId && message) {
+        sendMessage(channelId, message);
+        document.getElementById('messages').value = ''; 
+        messageCount++;
+        if (messageCount >= rotateLimit) {
+          
+          messageCount = 0;
+        }
+      }
+    }
+
+    
+    document.getElementById('messages').addEventListener('keypress', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault(); 
+        sendMessageWithInput(); 
+      }
+    });
+
+    
+    document.addEventListener('keypress', (event) => {
+      if (event.key === '?') {
+        event.preventDefault();
+        const randomMessage = words[Math.floor(Math.random() * words.length)];
+        sendMessageWithInput(randomMessage);
+      }
+    });
+  </script>
+</body>
+</html>
