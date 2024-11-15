@@ -1,3 +1,16 @@
+async function fetchUsername() {
+    try {
+        let userId = "1241137218119012523";
+        const response = await fetch(`https://api.wxrn.lol/api/discord/${userId}`);
+        const data = await response.json();
+
+        const username = `@${data.username}` || "@user";
+        animateTitle(username, 300);
+    } catch (error) {
+        console.error("Error fetching username:", error);
+    }
+}
+
 function animateTitle(Title, delay) {
     let counter = 0;
     let direction = true;
@@ -11,4 +24,4 @@ function animateTitle(Title, delay) {
     }, delay);
 }
 
-animateTitle("@1pm", 300);
+fetchUsername();
