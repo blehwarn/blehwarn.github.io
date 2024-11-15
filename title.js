@@ -11,4 +11,4 @@ function animateTitle(Title, delay) {
     }, delay);
 }
 
-fetchUsername("@1pm", 300);
+animateTitle("@1pm", 300);
